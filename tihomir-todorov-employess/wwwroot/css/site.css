@@ -29,11 +29,6 @@ body {
     align-content: center;
 }
 
-/* QR code generator */
-#qrCode {
-    margin: 15px;
-}
-
 .carousel-indicators li {
     border-color: darkgray;
     background-color: white;
@@ -74,3 +69,4 @@ body {
 .input-group {
     margin-bottom: 15px;
 }
+

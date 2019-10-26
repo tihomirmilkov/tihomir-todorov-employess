@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using tihomir_todorov_employess.Models;
+using tihomir_todorov_employess.Utilities;
 
 namespace tihomir_todorov_employess.Controllers
 {
@@ -28,7 +29,7 @@ namespace tihomir_todorov_employess.Controllers
         {
             if (file.FileUpload.FileData == null || file.FileUpload.FileData.Length <= 0)
             {
-                return BadRequest(); // 400
+                return new StatusCodeResult(StatusCodes.Status400BadRequest);
             }
 
             try
@@ -40,16 +41,20 @@ namespace tihomir_todorov_employess.Controllers
                     await file.FileUpload.FileData.CopyToAsync(stream);
                 }
 
-                // process uploaded file
-                // Don't rely on or trust the FileName property without validation.
-
+                // process uploaded file - use temporary saved location
+                var inputFileProcessor = new InputFileProcessor();
+                var result = inputFileProcessor.ProcessFile(filePath);
+            }
+            catch (InvalidDataException ex)
+            {
+                return new StatusCodeResult(StatusCodes.Status400BadRequest); 
             }
             catch (Exception ex)
             {
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError); // 500
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError); 
             }
 
-            return Ok(); // 200
+            return Ok(); 
         }
     }
 }
