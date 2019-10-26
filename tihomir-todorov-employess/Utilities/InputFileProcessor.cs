@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace tihomir_todorov_employess.Utilities
             var lines = File.ReadAllLines(filePath);
             foreach (var line in lines)
             {
-                var columns = line.Split(',');
+                var columns = line.Trim().Split(',');
 
                 // check if we have correct columns count
                 if (columns.Count() == 4)
@@ -79,20 +80,44 @@ namespace tihomir_todorov_employess.Utilities
                     var employee = new Employee(
                         int.Parse(columns[0].Trim()), // EmployeeID
                         int.Parse(columns[1].Trim()), // ProjectID
-                        Convert.ToDateTime(columns[2].Trim()), // DateFrom
-                        columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? DateTime.Now : Convert.ToDateTime(columns[3]) // DateTo - can be null
+                        ParseDateTime(columns[2]), // DateFrom
+                        columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? DateTime.Now : ParseDateTime(columns[3]) // DateTo - can be null
                         );
 
                     allEmployees.Add(employee);
                 }
                 // probably an empty line is not a problem so throw an exception only if columns are not 0 or 4
-                else if (columns.Count() != 0)
+                else if (columns.Count() != 0 && !(columns.Count() == 1 && columns[0].Length == 0))
                 {
                     throw new InvalidDataException("Invalid columns count on one or more lines.");
                 }
             }
 
             return allEmployees;
+        }
+
+        /// <summary>
+        /// Parse all DateTime formats from string to DateTime. Exclude the ones with comma symbol - ",". It is a delimiter in the file. If we chage it I can include those formats too :)
+        /// For example if delimiter is different we can include file format like "Monday, June 15, 2009".
+        /// </summary>
+        /// <param name="dateTime">string that can be all king of DateTime formats</param>
+        /// <returns>DateTime ready to go!</returns>
+        private DateTime ParseDateTime(string dateTime)
+        {
+            var result = new DateTime();
+
+            dateTime = dateTime.Trim();
+
+            var ci = new CultureInfo("en-US");
+            var formats = new[] {
+                "M-d-yyyy", "d-M-yyyy", "dd-MM-yyyy", "MM-dd-yyyy", "yyyy-M-d", "yyyy-d-M", "yyyy-dd-MM", "yyyy-MM-dd",
+                "M.d.yyyy", "d.M.yyyy", "dd.MM.yyyy", "MM.dd.yyyy", "yyyy.M.d", "yyyy.d.M", "yyyy.dd.MM", "yyyy.MM.dd",
+                "M/d/yyyy", "d/M/yyyy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy/M/d", "yyyy/d/M", "yyyy/dd/MM/yyyy", "yyyy/MM/dd"
+            }.Union(ci.DateTimeFormat.GetAllDateTimePatterns()).ToArray();
+
+            result = DateTime.ParseExact(dateTime, formats, ci, DateTimeStyles.AssumeLocal);
+
+            return result;
         }
     }
 }
