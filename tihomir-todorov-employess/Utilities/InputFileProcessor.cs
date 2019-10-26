@@ -32,13 +32,14 @@ namespace tihomir_todorov_employess.Utilities
             var bestEmployeesCouple = new EmployeesCouple();
 
             // sort employees and remove duplicates in order to optimize search
-            var sortedEmployees = allEmployees.OrderBy(x => x.EmployeeID).Distinct().ToList();
+            var sortedEmployees = allEmployees.Distinct().OrderBy(x => x.EmployeeID).ToList();
 
             // check all sorted employees for longest time working on a single project - only for employees next in the list (we save checking same employees couple twice)
             foreach (var employee in sortedEmployees)
             {
                 EmployeesCouple employeesCouple = (from e in sortedEmployees
                                                    where e.EmployeeID > employee.EmployeeID && e.ProjectID == employee.ProjectID
+                                                   && !(employee.DateFrom > e.DateTo || employee.DateTo < e.DateFrom)
                                                    select new EmployeesCouple()
                                                    {
                                                        EmployeeID1 = employee.EmployeeID,
