@@ -21,10 +21,10 @@ else
                 <tr>
                     @if (Model != null && @Model.employeesCouple != null && @Model.employeesCouple.EmployeeID1 > 0 && @Model.employeesCouple.EmployeeID2 > 0)
                     {
-                        <td>@Model.employeesCouple.EmployeeID1</td>
-                        <td>@Model.employeesCouple.EmployeeID2</td>
-                        <td>@Model.employeesCouple.ProjectID</td>
-                        <td>@Model.employeesCouple.DaysWorked</td>
+                        <td id ="EmployeeID1">@Model.employeesCouple.EmployeeID1</td>
+                        <td id ="EmployeeID2">@Model.employeesCouple.EmployeeID2</td>
+                        <td id ="ProjectID">@Model.employeesCouple.ProjectID</td>
+                        <td id ="DaysWorked">@Model.employeesCouple.DaysWorked</td>
                     }
                 </tr>
             </tbody>

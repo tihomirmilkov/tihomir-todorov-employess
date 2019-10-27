@@ -1,3 +1,4 @@
+using FluentAssertions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
@@ -21,32 +22,43 @@ public class AutomatedUITests : IDisposable
             _driver.Dispose();
         }
 
-        [Fact]
-        public void Create_WrongModelData_ReturnsErrorMessage()
+        [Theory]
+        [InlineData("test2.txt", 222, 333, 13, 2720)]
+        [InlineData("test3.txt", 222, 333, 13, 2720)]
+        [InlineData("test4.txt", 333, 433, 13, 2751)]
+        //TODO implementation for DateTo = NULL test cases - every day correct value can change
+        public void When_DataIsCorrectAndThereIsSolution_ThenCheckEndResult(string inputFile, int employeeID1, int employeeID2, int projectID, int daysWorked)
         {
+            // Arrange
             var filePath = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                @"..\..\..\TestFiles\test1.txt"
+                @"..\..\..\TestFiles\" + inputFile
                 ));
 
+            // Act
             _driver.Navigate()
                 .GoToUrl("http://localhost:53685");
 
-            _driver.FindElement(By.Name("browse"))
-                .Click();
-
-            _driver.FindElement(By.Id("file_input"))
-                .SendKeys(filePath);
-
-            //_driver.FindElement(By.Id("Age"))
-            //    .SendKeys("34");
-
-            //_driver.FindElement(By.Id("Create"))
+            // Selenuim doesn't support handling modal dialogs so I am not going to open the FileOpenDialog here. 
+            // Instead I am going to directly add file path with the command below.
+            //_driver.FindElement(By.Name("browse"))
             //    .Click();
 
-            //var errorMessage = _driver.FindElement(By.Id("AccountNumber-error")).Text;
+            _driver.FindElement(By.Id("FileUpload_FileData"))
+                .SendKeys(filePath);
 
-            //Assert.Equal("Account number is required", errorMessage);
+            _driver.FindElement(By.Name("upload"))
+                .Click();
+
+            // Assert
+            int.Parse(_driver.FindElement(By.Id("EmployeeID1")).Text.Trim())
+                .Should().Be(employeeID1);
+            int.Parse(_driver.FindElement(By.Id("EmployeeID2")).Text.Trim())
+                .Should().Be(employeeID2);
+            int.Parse(_driver.FindElement(By.Id("ProjectID")).Text.Trim())
+                .Should().Be(projectID);
+            int.Parse(_driver.FindElement(By.Id("DaysWorked")).Text.Trim())
+                .Should().Be(daysWorked);
         }
     }
 }
