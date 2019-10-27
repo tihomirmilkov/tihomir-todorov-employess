@@ -26,18 +26,20 @@ namespace tihomir_todorov_employess.Controllers
 
         public async Task<IActionResult> UploadFileAsync(FileModel file)
         {
-            var result = new EmployeesCoupleModel();
+            var result = new ResultModel();
 
             // check if file is empty
             if (file.FileUpload.FileData == null || file.FileUpload.FileData.Length <= 0)
             {
-                return new StatusCodeResult(StatusCodes.Status400BadRequest);
+                result.ErrorMessage = "Empty file";
+                return View("Index", result);
             }
 
             // check if file is a ".txt" file - task requirement
             if (!Path.GetExtension(file.FileUpload.FileData.FileName).Equals(".txt", StringComparison.OrdinalIgnoreCase))
             {
-                return new StatusCodeResult(StatusCodes.Status400BadRequest);
+                result.ErrorMessage = "File should be .txt";
+                return View("Index", result);
             }
 
             try
@@ -51,15 +53,17 @@ namespace tihomir_todorov_employess.Controllers
 
                 // process uploaded file - use temporary saved location
                 var inputFileProcessor = new InputFileProcessor();
-                result = inputFileProcessor.ProcessFile(filePath);
+                result.employeesCouple = inputFileProcessor.ProcessFile(filePath);
             }
             catch (InvalidDataException ex)
             {
-                return new StatusCodeResult(StatusCodes.Status400BadRequest); 
+                result.ErrorMessage = "Incorrect data in file. Error while parsing.";
+                return View("Index", result);
             }
             catch (Exception ex)
             {
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError); 
+                result.ErrorMessage = "Oops. Something went wrong on server side.";
+                return View("Index", result);
             }
 
             return View("Index", result);
