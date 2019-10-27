@@ -79,12 +79,20 @@ namespace tihomir_todorov_employess.Utilities
                 if (columns.Count() == 4)
                 {
                     // an exception might occure while parsing values - not a problem at this point because there is a try-catch block in the controller
-                    var employee = new Employee(
-                        int.Parse(columns[0].Trim()), // EmployeeID
-                        int.Parse(columns[1].Trim()), // ProjectID
-                        ParseDateTime(columns[2]), // DateFrom
-                        columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? DateTime.Now : ParseDateTime(columns[3]) // DateTo - can be null
-                        );
+                    Employee employee;
+                    try
+                    {
+                        employee = new Employee(
+                            int.Parse(columns[0].Trim()), // EmployeeID
+                            int.Parse(columns[1].Trim()), // ProjectID
+                            ParseDateTime(columns[2]), // DateFrom
+                            columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? DateTime.Now : ParseDateTime(columns[3]) // DateTo - can be null
+                            );
+                    }
+                    catch
+                    {
+                        throw new InvalidDataException("Invalid columns count on one or more lines.");
+                    }
 
                     allEmployees.Add(employee);
                 }
