@@ -24,9 +24,10 @@ namespace tihomir_todorov_employess.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [HttpPost]
         public async Task<IActionResult> UploadFileAsync(FileModel file)
         {
+            var result = new EmployeesCoupleModel();
+
             // check if file is empty
             if (file.FileUpload.FileData == null || file.FileUpload.FileData.Length <= 0)
             {
@@ -50,7 +51,7 @@ namespace tihomir_todorov_employess.Controllers
 
                 // process uploaded file - use temporary saved location
                 var inputFileProcessor = new InputFileProcessor();
-                var result = inputFileProcessor.ProcessFile(filePath);
+                result = inputFileProcessor.ProcessFile(filePath);
             }
             catch (InvalidDataException ex)
             {
@@ -61,7 +62,7 @@ namespace tihomir_todorov_employess.Controllers
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError); 
             }
 
-            return Ok(); 
+            return View("Index", result);
         }
     }
 }

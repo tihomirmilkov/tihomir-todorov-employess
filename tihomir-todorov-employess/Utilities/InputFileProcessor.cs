@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using tihomir_todorov_employess.Models;
 
 namespace tihomir_todorov_employess.Utilities
 {
@@ -15,7 +16,7 @@ namespace tihomir_todorov_employess.Utilities
         /// </summary>
         /// <param name="filePath">Uploaded file path - temporary location</param>
         /// <returns>Employee object with the result</returns>
-        public EmployeesCouple ProcessFile(string filePath)
+        public EmployeesCoupleModel ProcessFile(string filePath)
         {
             var allEmployees = ParseEmployeesData(filePath);
 
@@ -27,9 +28,9 @@ namespace tihomir_todorov_employess.Utilities
         /// </summary>
         /// <param name="allEmployees">All employees list - raw as it was parsed from the file.</param>
         /// <returns>Best employees couple that matches the criteria</returns>
-        private EmployeesCouple GetEmployeesThatWorkedMostTimeOnASingleProject(List<Employee> allEmployees)
+        private EmployeesCoupleModel GetEmployeesThatWorkedMostTimeOnASingleProject(List<Employee> allEmployees)
         {
-            var bestEmployeesCouple = new EmployeesCouple();
+            var bestEmployeesCouple = new EmployeesCoupleModel();
 
             // sort employees and remove duplicates in order to optimize search
             var sortedEmployees = allEmployees.Distinct().OrderBy(x => x.EmployeeID).ToList();
@@ -37,10 +38,10 @@ namespace tihomir_todorov_employess.Utilities
             // check all sorted employees for longest time working on a single project - only for employees next in the list (we save checking same employees couple twice)
             foreach (var employee in sortedEmployees)
             {
-                EmployeesCouple employeesCouple = (from e in sortedEmployees
+                EmployeesCoupleModel employeesCouple = (from e in sortedEmployees
                                                    where e.EmployeeID > employee.EmployeeID && e.ProjectID == employee.ProjectID
                                                    && !(employee.DateFrom > e.DateTo || employee.DateTo < e.DateFrom)
-                                                   select new EmployeesCouple()
+                                                   select new EmployeesCoupleModel()
                                                    {
                                                        EmployeeID1 = employee.EmployeeID,
                                                        EmployeeID2 = e.EmployeeID,
