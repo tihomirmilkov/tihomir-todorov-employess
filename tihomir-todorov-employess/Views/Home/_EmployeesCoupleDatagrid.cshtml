@@ -1,7 +1,7 @@
 ﻿<h4>Result</h4>
 @if (Model != null && Model.ErrorMessage != null && Model.ErrorMessage.Length > 0)
 {
-    <div class="alert alert-info">
+    <div class="alert alert-info" id="error_message">
         @Model.ErrorMessage
     </div>
 }
@@ -36,7 +36,7 @@ else
         }
         else if (@Model.employeesCouple.EmployeeID1 == 0 && @Model.employeesCouple.EmployeeID2 == 0)
         {
-            <p>No timeline match between employees' projects.</p>
+            <p id="no_match">No timeline match between employees' projects.</p>
         }
     </div>
 }
