@@ -27,7 +27,14 @@ namespace tihomir_todorov_employess.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFileAsync(FileModel file)
         {
+            // check if file is empty
             if (file.FileUpload.FileData == null || file.FileUpload.FileData.Length <= 0)
+            {
+                return new StatusCodeResult(StatusCodes.Status400BadRequest);
+            }
+
+            // check if file is a ".txt" file - task requirement
+            if (!Path.GetExtension(file.FileUpload.FileData.FileName).Equals(".txt", StringComparison.OrdinalIgnoreCase))
             {
                 return new StatusCodeResult(StatusCodes.Status400BadRequest);
             }
