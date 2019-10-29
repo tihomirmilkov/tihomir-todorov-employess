@@ -31,12 +31,33 @@ namespace tihomir_todorov_employess.Utilities
         /// <returns>Best employees couple that matches the criteria</returns>
         private List<EmployeesSameProjectWorkCouple> GetEmployeesThatWorkedMostTimeOnACommonProjects(List<Employee> allEmployeesData)
         {
-            // sort employees and remove duplicates in order to optimize search
+            // Sort employees and remove duplicates in order to optimize search
             var sortedEmployeesData = allEmployeesData.Distinct().OrderBy(x => x.EmployeeID).ToList();
 
+            // Remove overlapping time for the same employee and project
+            var optimizedEmployeesData = new List<Employee>();
+            foreach (var employeeData in sortedEmployeesData)
+            {
+                // check if there is overlap
+                var overlappedEmployeeData = optimizedEmployeesData
+                                                .Where(x => x.EmployeeID == employeeData.EmployeeID && x.ProjectID == employeeData.ProjectID
+                                                        && !(x.DateFrom > employeeData.DateTo || x.DateTo < employeeData.DateFrom))
+                                                .FirstOrDefault();
+
+                if (overlappedEmployeeData == null)
+                {
+                    optimizedEmployeesData.Add(employeeData);
+                }
+                else
+                {
+                    overlappedEmployeeData.DateFrom = overlappedEmployeeData.DateFrom > employeeData.DateFrom ? employeeData.DateFrom : overlappedEmployeeData.DateFrom;
+                    overlappedEmployeeData.DateTo = overlappedEmployeeData.DateTo < employeeData.DateTo ? employeeData.DateTo : overlappedEmployeeData.DateTo;
+                }
+            }
+
             // Group all employees couples that have worked on the same project and calculate days
-            var allEmployeesSameProjectWorkCouples = from e1 in sortedEmployeesData
-                                                     join e2 in sortedEmployeesData on e1.ProjectID equals e2.ProjectID
+            var allEmployeesSameProjectWorkCouples = from e1 in optimizedEmployeesData
+                                                     join e2 in optimizedEmployeesData on e1.ProjectID equals e2.ProjectID
                                                      where !(e1.DateFrom > e2.DateTo || e1.DateTo < e2.DateFrom) && e1.EmployeeID < e2.EmployeeID
                                                      select new EmployeesSameProjectWorkCouple
                                                      {
@@ -79,6 +100,9 @@ namespace tihomir_todorov_employess.Utilities
         {
             var allEmployees = new List<Employee>();
 
+            // get Date here otherwise it can be different by miliseconds for all lines :)
+            var dateTimeNow = DateTime.Now;
+
             var lines = File.ReadAllLines(filePath);
             foreach (var line in lines)
             {
@@ -95,7 +119,7 @@ namespace tihomir_todorov_employess.Utilities
                             int.Parse(columns[0].Trim()), // EmployeeID
                             int.Parse(columns[1].Trim()), // ProjectID
                             ParseDateTime(columns[2]), // DateFrom
-                            columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? DateTime.Now : ParseDateTime(columns[3]) // DateTo - can be null
+                            columns[3].Trim().Equals("NULL", StringComparison.OrdinalIgnoreCase) ? dateTimeNow : ParseDateTime(columns[3]) // DateTo - can be null
                             );
                     }
                     catch
