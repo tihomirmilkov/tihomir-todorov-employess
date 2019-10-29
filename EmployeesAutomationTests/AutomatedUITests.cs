@@ -53,9 +53,9 @@ public class AutomatedUITests : IDisposable
 
 
         [Theory]
-        [InlineData("test2.txt", 222, 333, 13, 2720)]
-        [InlineData("test3.txt", 222, 333, 13, 2720)]
-        [InlineData("test4.txt", 333, 433, 13, 2751)]
+        [InlineData("test2.txt", 222, 333, 13, 10)]
+        [InlineData("test3.txt", 222, 333, 13, 2721)]
+        [InlineData("test4.txt", 333, 433, 13, 3118)]
         //TODO implementation for DateTo = NULL test cases - every day correct value can change
         public void When_DataIsCorrectAndThereIsSolution_ThenCheckEndResult(string inputFile, int employeeID1, int employeeID2, int projectID, int daysWorked)
         {

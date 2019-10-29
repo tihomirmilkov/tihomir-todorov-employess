@@ -46,7 +46,7 @@ namespace tihomir_todorov_employess.Utilities
                                                        EmployeeID1 = employee.EmployeeID,
                                                        EmployeeID2 = e.EmployeeID,
                                                        ProjectID = employee.ProjectID,
-                                                       DaysWorked = ((employee.DateTo < e.DateTo ? employee.DateTo : e.DateTo) - (employee.DateFrom > e.DateFrom ? employee.DateFrom : e.DateFrom)).Days
+                                                       DaysWorked = ((employee.DateTo < e.DateTo ? employee.DateTo : e.DateTo) - (employee.DateFrom > e.DateFrom ? employee.DateFrom : e.DateFrom)).Days + 1
                                                    })
                                                   .Where(x => x.DaysWorked > 0)
                                                   .OrderByDescending(x => x.DaysWorked)
