@@ -1,4 +1,6 @@
-﻿<h4>Result</h4>
+﻿@model ResultModel;
+
+<h4>Result</h4>
 @if (Model != null && Model.ErrorMessage != null && Model.ErrorMessage.Length > 0)
 {
     <div class="alert alert-info" id="error_message">
@@ -18,23 +20,26 @@ else
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    @if (Model != null && @Model.employeesCouple != null && @Model.employeesCouple.EmployeeID1 > 0 && @Model.employeesCouple.EmployeeID2 > 0)
+                @if (Model != null && @Model.employeesCouples != null && @Model.employeesCouples.Count() > 0)
+                {
+                    @foreach (var e in Model.employeesCouples)
                     {
-                        <td id ="EmployeeID1">@Model.employeesCouple.EmployeeID1</td>
-                        <td id ="EmployeeID2">@Model.employeesCouple.EmployeeID2</td>
-                        <td id ="ProjectID">@Model.employeesCouple.ProjectID</td>
-                        <td id ="DaysWorked">@Model.employeesCouple.DaysWorked</td>
+                        <tr>
+                            <td id="EmployeeID1">@e.EmployeeID1</td>
+                            <td id="EmployeeID2">@e.EmployeeID2</td>
+                            <td id="ProjectID">@e.ProjectID</td>
+                            <td id="DaysWorked">@e.DaysWorked</td>
+                        </tr>
                     }
-                </tr>
+                }
             </tbody>
         </table>
 
-        @if (Model == null || @Model.employeesCouple == null)
+        @if (Model == null || @Model.employeesCouples == null)
         {
             <p>No result yet</p>
         }
-        else if (@Model.employeesCouple.EmployeeID1 == 0 && @Model.employeesCouple.EmployeeID2 == 0)
+        else if (@Model.employeesCouples.Count() == 0)
         {
             <p id="no_match">No timeline match between employees' projects.</p>
         }

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using tihomir_todorov_employess.Models;
+using tihomir_todorov_employess.Utilities;
 
 namespace tihomir_todorov_employess.Utilities
 {
@@ -16,49 +17,57 @@ namespace tihomir_todorov_employess.Utilities
         /// </summary>
         /// <param name="filePath">Uploaded file path - temporary location</param>
         /// <returns>Employee object with the result</returns>
-        public EmployeesCouple ProcessFile(string filePath)
+        public List<EmployeesSameProjectWorkCouple> ProcessFile(string filePath)
         {
             var allEmployees = ParseEmployeesData(filePath);
 
-            return GetEmployeesThatWorkedMostTimeOnASingleProject(allEmployees);
+            return GetEmployeesThatWorkedMostTimeOnACommonProjects(allEmployees);
         }
 
         /// <summary>
-        /// Get Employees That Worked Most Time On A Single Project
+        /// Get Employees That Worked Most Time On A Common Projects
         /// </summary>
-        /// <param name="allEmployees">All employees list - raw as it was parsed from the file.</param>
+        /// <param name="allEmployeesData">All employees data list - raw as it was parsed from the file.</param>
         /// <returns>Best employees couple that matches the criteria</returns>
-        private EmployeesCouple GetEmployeesThatWorkedMostTimeOnASingleProject(List<Employee> allEmployees)
+        private List<EmployeesSameProjectWorkCouple> GetEmployeesThatWorkedMostTimeOnACommonProjects(List<Employee> allEmployeesData)
         {
-            var bestEmployeesCouple = new EmployeesCouple();
-
             // sort employees and remove duplicates in order to optimize search
-            var sortedEmployees = allEmployees.Distinct().OrderBy(x => x.EmployeeID).ToList();
+            var sortedEmployeesData = allEmployeesData.Distinct().OrderBy(x => x.EmployeeID).ToList();
 
-            // check all sorted employees for longest time working on a single project - only for employees next in the list (we save checking same employees couple twice)
-            foreach (var employee in sortedEmployees)
-            {
-                EmployeesCouple employeesCouple = (from e in sortedEmployees
-                                                   where e.EmployeeID > employee.EmployeeID && e.ProjectID == employee.ProjectID
-                                                   && !(employee.DateFrom > e.DateTo || employee.DateTo < e.DateFrom)
-                                                   select new EmployeesCouple()
-                                                   {
-                                                       EmployeeID1 = employee.EmployeeID,
-                                                       EmployeeID2 = e.EmployeeID,
-                                                       ProjectID = employee.ProjectID,
-                                                       DaysWorked = ((employee.DateTo < e.DateTo ? employee.DateTo : e.DateTo) - (employee.DateFrom > e.DateFrom ? employee.DateFrom : e.DateFrom)).Days + 1
-                                                   })
-                                                  .Where(x => x.DaysWorked > 0)
-                                                  .OrderByDescending(x => x.DaysWorked)
-                                                  .FirstOrDefault();
+            // Group all employees couples that have worked on the same project and calculate days
+            var allEmployeesSameProjectWorkCouples = from e1 in sortedEmployeesData
+                                                     join e2 in sortedEmployeesData on e1.ProjectID equals e2.ProjectID
+                                                     where !(e1.DateFrom > e2.DateTo || e1.DateTo < e2.DateFrom) && e1.EmployeeID < e2.EmployeeID
+                                                     select new EmployeesSameProjectWorkCouple
+                                                     {
+                                                         EmployeeID1 = e1.EmployeeID,
+                                                         EmployeeID2 = e2.EmployeeID,
+                                                         ProjectID = e1.ProjectID,
+                                                         DaysWorked = CalculateDaysWorked(e1, e2)
+                                                     };
 
-                if (employeesCouple != null && bestEmployeesCouple.DaysWorked < employeesCouple.DaysWorked)
-                {
-                    bestEmployeesCouple = employeesCouple;
-                }
-            }
+            // Calculate total days working together for all employees couples and get the bes one
+            var bestEmployeeCouple = allEmployeesSameProjectWorkCouples
+                                        .GroupBy(all => new { all.EmployeeID1, all.EmployeeID2 })
+                                        .Select(x => new
+                                        {
+                                            x.Key,
+                                            TotalDaysWorked = x.Sum(all => all.DaysWorked)
+                                        })
+                                        .OrderByDescending(x => x.TotalDaysWorked)
+                                        .FirstOrDefault();
 
-            return bestEmployeesCouple;
+            // Get all project "DaysWorked" for the best couple of employees
+            var bestEmployeesSameProjectWorkCouples = allEmployeesSameProjectWorkCouples
+                                                    .Where(x => x.EmployeeID1 == bestEmployeeCouple.Key.EmployeeID1 && x.EmployeeID2 == bestEmployeeCouple.Key.EmployeeID2)
+                                                    .ToList();
+
+            return bestEmployeesSameProjectWorkCouples;
+        }
+
+        private static int CalculateDaysWorked(Employee employee1, Employee employee2)
+        {
+            return ((employee1.DateTo < employee2.DateTo ? employee1.DateTo : employee2.DateTo) - (employee1.DateFrom > employee2.DateFrom ? employee1.DateFrom : employee2.DateFrom)).Days + 1;
         }
 
         /// <summary>

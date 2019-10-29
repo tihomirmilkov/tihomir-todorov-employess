@@ -53,7 +53,7 @@ namespace tihomir_todorov_employess.Controllers
 
                 // process uploaded file - use temporary saved location
                 var inputFileProcessor = new InputFileProcessor();
-                result.employeesCouple = inputFileProcessor.ProcessFile(filePath);
+                result.employeesCouples = inputFileProcessor.ProcessFile(filePath);
             }
             catch (InvalidDataException ex)
             {
